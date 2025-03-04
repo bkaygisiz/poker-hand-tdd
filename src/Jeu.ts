@@ -19,4 +19,21 @@ export class Jeu {
         const [joueur1, joueur2] = this.joueurs;
         return ComparateurMains.comparerMains(joueur1.main, joueur2.main);
     }
+    public determinerGagnantEnCasDEgalite(): number {
+        const [joueur1, joueur2] = this.joueurs;
+        const valeursOrdre = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        
+        const triValeurs = (main: any[]) =>
+            main.map(carte => valeursOrdre.indexOf(carte.valeur)).sort((a, b) => b - a);
+
+        const valeurs1 = triValeurs(joueur1.main);
+        const valeurs2 = triValeurs(joueur2.main);
+
+        for (let i = 0; i < valeurs1.length; i++) {
+            if (valeurs1[i] > valeurs2[i]) return 1;
+            if (valeurs2[i] > valeurs1[i]) return 2;
+        }
+
+        return 0; // Égalité parfaite
+    }
 }
