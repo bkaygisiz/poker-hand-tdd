@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { Paquet } from '../Paquet';
 import { Joueur } from '../Joueur';
 import { ComparateurMains } from '../Comparateur'
+import { Jeu } from '../Jeu';
 
 describe('Partie complète de Poker', () => {
     it('Partie complete avec J1 gagnant grace a une main predefinie', () => {
@@ -94,21 +95,3 @@ describe('Partie complète de Poker', () => {
     });
 });
 
-export class Jeu {
-    public joueurs: Joueur[];
-    private paquet: Paquet;
-
-    constructor(nomsJoueurs: string[]) {
-        this.paquet = new Paquet();
-        this.joueurs = nomsJoueurs.map(nom => new Joueur(nom));
-    }
-
-    public demarrerPartie(): void {
-        this.joueurs.forEach(joueur => joueur.recevoirCartes(this.paquet.distribuer(5)));
-    }
-
-    public determinerGagnant(): number {
-        const [joueur1, joueur2] = this.joueurs;
-        return ComparateurMains.comparerMains(joueur1.main, joueur2.main);
-    }
-}
