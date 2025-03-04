@@ -1,53 +1,114 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { Paquet } from '../Paquet';
 import { Joueur } from '../Joueur';
-import { ComparateurMains } from '../Comparateur';
+import { ComparateurMains } from '../Comparateur'
 
-describe('Comparaison des mains', () => {
-    it('devrait déclarer gagnant le joueur avec la meilleure main donc J1', () => {
-        const joueur1 = new Joueur('Joueur 1');
-        const joueur2 = new Joueur('Joueur 2');
+describe('Partie complète de Poker', () => {
+    it('Partie complete avec J1 gagnant grace a une main predefinie', () => {
+        const jeu = new Jeu(['Joueur 1', 'Joueur 2']);
+        
+        // Mock de recevoirCartes pour assigner des mains spécifiques
+        vi.spyOn(jeu.joueurs[0], 'recevoirCartes').mockImplementation(function (this: Joueur) {
+            this.main = [
+                { valeur: 'A', couleur: '♥' },
+                { valeur: 'K', couleur: '♥' },
+                { valeur: 'Q', couleur: '♥' },
+                { valeur: 'J', couleur: '♥' },
+                { valeur: '10', couleur: '♥' }
+            ];
+        });
 
-        joueur1.recevoirCartes([
-            { valeur: 'A', couleur: '♥' },
-            { valeur: 'K', couleur: '♥' },
-            { valeur: 'Q', couleur: '♥' },
-            { valeur: 'J', couleur: '♥' },
-            { valeur: '10', couleur: '♥' }
-        ]);
+        vi.spyOn(jeu.joueurs[1], 'recevoirCartes').mockImplementation(function (this: Joueur) {
+            this.main = [
+                { valeur: '2', couleur: '♠' },
+                { valeur: '3', couleur: '♠' },
+                { valeur: '4', couleur: '♠' },
+                { valeur: '5', couleur: '♠' },
+                { valeur: '6', couleur: '♠' }
+            ];
+        });
 
-        joueur2.recevoirCartes([
-            { valeur: '2', couleur: '♠' },
-            { valeur: '3', couleur: '♠' },
-            { valeur: '4', couleur: '♠' },
-            { valeur: '5', couleur: '♠' },
-            { valeur: '6', couleur: '♠' }
-        ]);
+        jeu.demarrerPartie();
 
-        expect(ComparateurMains.comparerMains(joueur1.main, joueur2.main)).toBe(1);
+        expect(jeu.joueurs[0].main.length).toBe(5);
+        expect(jeu.joueurs[1].main.length).toBe(5);
+
+        const gagnant = jeu.determinerGagnant();
+        expect(gagnant).toBe(1); // Joueur 1 devrait gagner avec une quinte flush royale
     });
 
-    it('devrait gérer une égalité si les mains sont identiques', () => {
-        const joueur1 = new Joueur('Joueur 1');
-        const joueur2 = new Joueur('Joueur 2');
+    it('devrait déclarer un gagnant avec un full contre une couleur', () => {
+        const jeu = new Jeu(['Joueur 1', 'Joueur 2']);
+        
+        vi.spyOn(jeu.joueurs[0], 'recevoirCartes').mockImplementation(function (this: Joueur) {
+            this.main = [
+                { valeur: 'K', couleur: '♦' },
+                { valeur: 'K', couleur: '♠' },
+                { valeur: 'K', couleur: '♣' },
+                { valeur: '10', couleur: '♥' },
+                { valeur: '10', couleur: '♦' }
+            ];
+        });
 
-        joueur1.recevoirCartes([
-            { valeur: 'K', couleur: '♦' },
-            { valeur: 'K', couleur: '♣' },
-            { valeur: 'K', couleur: '♠' },
-            { valeur: 'K', couleur: '♥' },
-            { valeur: '10', couleur: '♦' }
-        ]);
+        vi.spyOn(jeu.joueurs[1], 'recevoirCartes').mockImplementation(function (this: Joueur) {
+            this.main = [
+                { valeur: 'A', couleur: '♣' },
+                { valeur: 'J', couleur: '♣' },
+                { valeur: '9', couleur: '♣' },
+                { valeur: '5', couleur: '♣' },
+                { valeur: '3', couleur: '♣' }
+            ];
+        });
 
-        joueur2.recevoirCartes([
-            { valeur: 'K', couleur: '♦' },
-            { valeur: 'K', couleur: '♣' },
-            { valeur: 'K', couleur: '♠' },
-            { valeur: 'K', couleur: '♥' },
-            { valeur: '10', couleur: '♦' }
-        ]);
+        jeu.demarrerPartie();
+        const gagnant = jeu.determinerGagnant();
+        expect(gagnant).toBe(1); // Joueur 1 gagne avec un full contre une couleur
+    });
 
-        expect(ComparateurMains.comparerMains(joueur1.main, joueur2.main)).toBe(0);
+    it('devrait gérer une égalité entre deux brelans de même valeur', () => {
+        const jeu = new Jeu(['Joueur 1', 'Joueur 2']);
+        
+        vi.spyOn(jeu.joueurs[0], 'recevoirCartes').mockImplementation(function (this: Joueur) {
+            this.main = [
+                { valeur: 'Q', couleur: '♠' },
+                { valeur: 'Q', couleur: '♥' },
+                { valeur: 'Q', couleur: '♦' },
+                { valeur: '8', couleur: '♣' },
+                { valeur: '6', couleur: '♠' }
+            ];
+        });
+
+        vi.spyOn(jeu.joueurs[1], 'recevoirCartes').mockImplementation(function (this: Joueur) {
+            this.main = [
+                { valeur: 'Q', couleur: '♣' },
+                { valeur: 'Q', couleur: '♦' },
+                { valeur: 'Q', couleur: '♠' },
+                { valeur: '8', couleur: '♦' },
+                { valeur: '6', couleur: '♣' }
+            ];
+        });
+
+        jeu.demarrerPartie();
+        const gagnant = jeu.determinerGagnant();
+        expect(gagnant).toBe(0); // Égalité entre deux brelans de même valeur
     });
 });
 
+export class Jeu {
+    public joueurs: Joueur[];
+    private paquet: Paquet;
+
+    constructor(nomsJoueurs: string[]) {
+        this.paquet = new Paquet();
+        this.joueurs = nomsJoueurs.map(nom => new Joueur(nom));
+    }
+
+    public demarrerPartie(): void {
+        this.joueurs.forEach(joueur => joueur.recevoirCartes(this.paquet.distribuer(5)));
+    }
+
+    public determinerGagnant(): number {
+        const [joueur1, joueur2] = this.joueurs;
+        return ComparateurMains.comparerMains(joueur1.main, joueur2.main);
+    }
+}
